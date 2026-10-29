@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Typing Practice</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background-image: url(miky.jpg);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            color:white;
+            text-align:center;
+            padding:20px;
+        }
+
+        #text{
+            width:80%;
+            margin:20px auto;
+            font-size:28px;
+            background:#333;
+            padding:20px;
+            border-radius:10px;
+            line-height:1.5;
+        }
+
+        .correct{ color:lime; }
+        .wrong{ color:red; }
+
+        #typingInput{
+            width:80%;
+            padding:15px;
+            font-size:22px;
+            border:none;
+            border-radius:10px;
+            outline:none;
+        }
+
+        .row{
+            display:flex;
+            justify-content:center;
+            margin:5px;
+        }
+
+        .key{
+            width:50px;
+            height:50px;
+            margin:3px;
+            border-radius:8px;
+            background:#333;
+            border:2px solid #555;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .space{
+            width:300px;
+        }
+
+        .active{
+            background:crimson;
+        }
+
+        #stats{
+            font-size:24px;
+            margin:20px;
+        }
+
+        select, button{
+            padding:10px 20px;
+            font-size:18px;
+            border:none;
+            border-radius:8px;
+            margin:10px;
+        }
+
+        button{
+            background:crimson;
+            color:white;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Typing Practice</h1>
+
+<div id="stats">
+    Time Left: <span id="timer">60</span>s |
+    Accuracy: <span id="accuracy">100</span>%
+</div>
+
+<select id="level">
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+</select>
+
+<button id="startBtn">Start Game</button>
+
+<div id="text"></div>
+
+<input type="text" id="typingInput"
+placeholder="Click Start Game to begin..." disabled autofocus>
+
+<h2>Keyboard</h2>
+
+<div class="row">
+    <div class="key" data-key="q">Q</div>
+    <div class="key" data-key="w">W</div>
+    <div class="key" data-key="e">E</div>
+    <div class="key" data-key="r">R</div>
+    <div class="key" data-key="t">T</div>
+    <div class="key" data-key="y">Y</div>
+    <div class="key" data-key="u">U</div>
+    <div class="key" data-key="i">I</div>
+    <div class="key" data-key="o">O</div>
+    <div class="key" data-key="p">P</div>
+</div>
+
+<div class="row">
+    <div class="key" data-key="a">A</div>
+    <div class="key" data-key="s">S</div>
+    <div class="key" data-key="d">D</div>
+    <div class="key" data-key="f">F</div>
+    <div class="key" data-key="g">G</div>
+    <div class="key" data-key="h">H</div>
+    <div class="key" data-key="j">J</div>
+    <div class="key" data-key="k">K</div>
+    <div class="key" data-key="l">L</div>
+</div>
+
+<div class="row">
+    <div class="key" data-key="z">Z</div>
+    <div class="key" data-key="x">X</div>
+    <div class="key" data-key="c">C</div>
+    <div class="key" data-key="v">V</div>
+    <div class="key" data-key="b">B</div>
+    <div class="key" data-key="n">N</div>
+    <div class="key" data-key="m">M</div>
+</div>
+
+<div class="row">
+    <div class="key space" data-key=" ">SPACE</div>
+</div>
+
+<script src="jquery4.0.js"></script>
+<script>
+
+const levels = {
+
+    easy: [
+        "Fear of failure is being afraid to make mistakes. It can stop people from trying new things. We can learn from our mistakes and do better next time.",
+        "Crime is doing something against the law. It can make people feel unsafe. We should follow the law and respect others.",
+        "Psychology is the study of the mind. It helps us understand how people think and feel. It is useful in everyday life.",
+    ],
+    medium: [
+        "Fear of failure is a feeling many people have. It happens when people are afraid of making mistakes or not doing well. This fear can stop them from trying new things. However, making mistakes is normal and helps us learn. If we keep trying and do not give up, we can improve and reach our goals.",
+        "Crime is when people do things that are against the law. Examples are stealing, fighting, and hurting others. Crime can make people feel unsafe. Police work to stop crime and protect people. Everyone should follow the law and be kind to others. This helps make the community a safer place.",
+        "Psychology is the study of how people think and feel. It helps us understand why people act in different ways. Psychology can teach us how to solve problems and get along with others. Learning about psychology can help us understand ourselves better and live happier lives."
+    ],
+
+    hard: [
+        "Fear of failure is a common psychological challenge that affects many individuals. It occurs when people become anxious about making mistakes or not achieving success. This fear can reduce motivation and prevent personal growth. However, failure is often a valuable learning experience. By developing confidence and perseverance, individuals can overcome obstacles and achieve their ambitions.",
+        "Crime is a significant social issue that affects communities around the world. Criminal activities such as theft, violence, and fraud can create fear and insecurity among citizens. Governments enforce laws and implement programs to reduce crime rates. Public cooperation and education are also essential for maintaining a safe and peaceful society.",
+        "Psychology is an academic field that studies human thoughts, emotions, and behavior. Psychologists conduct research to understand how people interact with others and respond to different situations. The knowledge gained from psychology can improve communication, mental well-being, and decision-making. It plays an important role in helping individuals and communities live healthier and more productive lives."
+    ]
+};
+
+let sentence = "";
+let timer;
+let timeLeft = 60;
+function getSentence(){
+    let level = $("#level").val();
+    let list = levels[level];
+
+    sentence = list[Math.floor(Math.random() * list.length)];
+}
+
+function showSentence(){
+    $("#text").empty();
+
+    sentence.split("").forEach(char=>{
+        $("<span>").text(char).appendTo("#text");
+    });
+}
+
+function startGame(){
+
+    clearInterval(timer);
+
+    timeLeft = 120;
+    $("#timer").text(timeLeft);
+    $("#accuracy").text("100");
+
+    $("#typingInput")
+        .val("")
+        .prop("disabled", false)
+        .focus();
+
+    getSentence();
+    showSentence();
+
+    timer = setInterval(function(){
+
+        timeLeft--;
+        $("#timer").text(timeLeft);
+
+        if(timeLeft <= 0){
+
+            clearInterval(timer);
+
+            $("#typingInput").prop("disabled", true);
+
+            alert("Time's Up!");
+        }
+
+    },1000);
+}
+
+$("#startBtn").click(function(){
+    startGame();
+});
+
+$("#typingInput").on("input", function(){
+
+    const spans = $("#text span");
+    const typed = $(this).val().split("");
+
+    let totalTyped = typed.length;
+    let correctTyped = 0;
+
+    spans.each(function(index){
+
+        if(typed[index] == null){
+            $(this).removeClass("correct wrong");
+        }
+
+        else if(typed[index] === $(this).text()){
+            $(this).removeClass("wrong")
+                   .addClass("correct");
+
+            correctTyped++;
+        }
+
+        else{
+            $(this).removeClass("correct")
+                   .addClass("wrong");
+        }
+    });
+
+    let accuracy = totalTyped > 0
+        ? Math.round((correctTyped / totalTyped) * 100)
+        : 100;
+
+    $("#accuracy").text(accuracy);
+
+    if($(this).val() === sentence){
+
+        $(this).val("");
+
+        getSentence();
+        showSentence();
+    }
+});
+
+$(document).on("keydown", function(e){
+
+    $(".key").each(function(){
+
+        if($(this).data("key").toLowerCase() === e.key.toLowerCase()){
+            $(this).addClass("active");
+        }
+    });
+});
+
+$(document).on("keyup", function(e){
+
+    $(".key").each(function(){
+
+        if($(this).data("key").toLowerCase() === e.key.toLowerCase()){
+
+            $(this).removeClass("active");
+        }
+    });
+});
+
+</script>
+
+</body>
+</html>
